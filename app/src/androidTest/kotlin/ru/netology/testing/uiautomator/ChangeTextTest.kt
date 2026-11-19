@@ -6,10 +6,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,6 +84,13 @@ class ChangeTextTest {
         device.wait(Until.hasObject(By.pkg(packageName)), TIMEOUT)
     }
 
+    private fun waitForView(resId: String): UiObject2 {
+        val obj = device.wait(Until.findObject(By.res(MODEL_PACKAGE, resId)), TIMEOUT)
+        assertNotNull("Элемент с id='$resId' не найден на экране за $TIMEOUT мс", obj)
+        return obj
+    }
+
+
     @Before
     fun beforeEachTest() {
         // Press home
@@ -117,38 +126,26 @@ class ChangeTextTest {
     // Тест 1: попытка установить пустую строку (только пробелы)
     @Test
     fun testEmptyText() {
-        val packageName = MODEL_PACKAGE
-        waitForPackage(packageName)
+        waitForPackage(MODEL_PACKAGE)
 
-        // Запоминаем исходный текст TextView
-        val textToBeChanged = device.findObject(By.res(packageName, "textToBeChanged")).text
+        val original = waitForView("textToBeChanged").text
 
-        device.findObject(By.res(packageName, "userInput")).text = EMPTY_TEXT
-        device.findObject(By.res(packageName, "buttonChange")).click()
+        waitForView("userInput").text = EMPTY_TEXT
+        waitForView("buttonChange").click()
 
-        val result = device.findObject(By.res(packageName, "textToBeChanged")).text
-        // Текст должен остаться прежним
-        assertEquals(textToBeChanged, result)
+        val result = waitForView("textToBeChanged").text
+        assertEquals(original, result)
         assertNotEquals(EMPTY_TEXT, result)
     }
 
-    // Тест 2: открытие текста в новой Activity
     @Test
     fun testOpenTextInNewActivity() {
-        val packageName = MODEL_PACKAGE
-        waitForPackage(packageName)
+        waitForPackage(MODEL_PACKAGE)
 
-        device.findObject(By.res(packageName, "userInput")).text = TEXT_TO_SET
-        device.findObject(By.res(packageName, "buttonActivity")).click()
+        waitForView("userInput").text = TEXT_TO_SET
+        waitForView("buttonActivity").click()
 
-        // Ждём, пока появится TextView второй Activity
-        val resultObject = device.wait(
-            Until.hasObject(By.res(packageName, "text")),   // <-- было "result"
-            TIMEOUT
-        )
-        assertEquals(true, resultObject)
-
-        val result = device.findObject(By.res(packageName, "text")).text   // <-- было "result"
+        val result = waitForView("text").text
         assertEquals(TEXT_TO_SET, result)
     }
 
