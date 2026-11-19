@@ -113,14 +113,12 @@ class ChangeTextTest {
 
     @Test
     fun testChangeText() {
-        val packageName = MODEL_PACKAGE
-        waitForPackage(packageName)
+        waitForPackage(MODEL_PACKAGE)
 
-        device.findObject(By.res(packageName, "userInput")).text = textToSet
-        device.findObject(By.res(packageName, "buttonChange")).click()
+        waitForView("userInput").text = TEXT_TO_SET
+        waitForView("buttonChange").click()
 
-        val result = device.findObject(By.res(packageName, "textToBeChanged")).text
-        assertEquals(result, textToSet)
+        assertEquals(TEXT_TO_SET, waitForView("textToBeChanged").text)
     }
 
     // Тест 1: попытка установить пустую строку (только пробелы)
